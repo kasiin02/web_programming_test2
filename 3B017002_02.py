@@ -43,7 +43,7 @@ def get_student_info(data: dict, student_id: str) -> dict:
     raise ValueError(f"學號 {student_id} 找不到.")
 
 
-def add_course(data: dict, student_id: str, course_name: str, course_score: float) -> None:
+def add_course(data: dict, student_id: str, course_name: str, course_score: str, filename: str) -> None:
     """
     為指定學生添加一門課程及其分數，如果找不到該學生則拋出 ValueError，並檢查課程名稱和分數不可為空字串。
 
@@ -52,16 +52,20 @@ def add_course(data: dict, student_id: str, course_name: str, course_score: floa
         student_id: 學生的學號。
         course_name: 課程名稱。
         course_score: 課程分數。
+        filename: JSON檔名。
 
     Raises:
         ValueError: 找不到學生或課程名稱和分數為空字串。
     """
-    if course_name == "" or course_score == "":
-        raise ValueError("課程名稱或分數不可空白.")
 
     for student in data:
         if student['student_id'] == student_id:
+            if course_name == "" or course_score == "":
+                raise ValueError("課程名稱或分數不可空白.")
             student['courses'].append({'name': course_name, 'score': course_score})
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+                print("=>課程已成功新增。")
             return
     raise ValueError(f"學號 {student_id} 找不到.")
 
@@ -115,18 +119,11 @@ def main():
         elif choice == '2':
             student_id = input("請輸入學號: ")
             course_name = input("請輸入要新增課程的名稱: ")
-            course_score_input = input("請輸入要新增課程的分數: ")
-            if course_score_input.strip():  # 檢查課程分數是否為空字串
-                try:
-                    course_score = float(course_score_input)
-                    add_course(data, student_id, course_name, course_score)
-                    with open(filename, 'w', encoding='utf-8') as f:
-                        json.dump(data, f, ensure_ascii=False, indent=2)
-                    print("=>課程已成功新增。")
-                except ValueError as e:
-                    print(f"=>其它例外: {e}")
-            else:
-                print("=>其它例外: 課程名稱或分數不可空白.")
+            course_score = input("請輸入要新增課程的分數: ")
+            try:
+                add_course(data, student_id, course_name, course_score, filename)
+            except ValueError as e:
+                print(f"=>其它例外: {e}")
         elif choice == '3':
             student_id = input("請輸入學號: ")
             try:
